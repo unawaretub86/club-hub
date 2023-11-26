@@ -16,10 +16,13 @@ func NewRouter(clubHubServicePorts ports.WebPort) *ClubHubRouter {
 }
 
 func (r *ClubHubRouter) SetRoutes(g *gin.Engine) {
-	group := g.Group("/v1")
+	group := g.Group("/company" )
 
 	// read
-	group.GET("/company", r.GetCompany)
+	group.GET("/", r.GetCompany)
+	group.GET("/franchise", r.GetCompanyByFranchise)
+	group.GET("/owner", r.GetCompanyByOwner)
+	group.GET("/information", r.GetCompanyByInformation)
 
 	// write
 	group.PATCH("/:id", r.UpdateCompany)

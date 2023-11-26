@@ -11,8 +11,8 @@ type (
 
 	Contact struct {
 		ID         *uint     `gorm:"primaryKey" json:"id,omitempty"`
-		Email      *string   `gorm:"not null" json:"email,omitempty"`
-		Phone      *string   `gorm:"not null" json:"phone,omitempty"`
+		Email      *string   `gorm:"not null,unique" json:"email,omitempty"`
+		Phone      *string   `gorm:"not null,unique" json:"phone,omitempty"`
 		LocationID *uint     `gorm:"references:locations" json:"locationId,omitempty"`
 		Location   *Location `json:"location,omitempty"`
 	}

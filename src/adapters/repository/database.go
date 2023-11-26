@@ -1,9 +1,18 @@
 package repository
 
 import (
+	"reflect"
+
 	"gorm.io/gorm"
 
+	"github.com/unawaretub86/club-hub/src/config/apperrors"
 	"github.com/unawaretub86/club-hub/src/core/domain"
+)
+
+const (
+	id            = "ID"
+	informationID = "information_id"
+	ownerID       = "owner_id"
 )
 
 type ClubRepository struct {
@@ -25,13 +34,13 @@ func (repo *ClubRepository) SaveCompany(company domain.Company) (*domain.Company
 	return &company, nil
 }
 
-func (repo *ClubRepository) GetCompany(filterFields map[string]string) ([]domain.Company, error) {
-	company := []domain.Company{}
+func (repo *ClubRepository) GetCompany(filterFields map[string]string) (domain.Companies, error) {
+	company := domain.Companies{}
 
 	result := repo.db.
-		Preload("Owner.Contact.Location").
-		Preload("Information.Location").
-		Preload("Franchises.Location").
+		Preload("Owner.Contact.Location.Country").
+		Preload("Information.Location.Country").
+		Preload("Franchises.Location.Country").
 		Where(filterFields).
 		Find(&company)
 
@@ -43,15 +52,10 @@ func (repo *ClubRepository) GetCompany(filterFields map[string]string) ([]domain
 }
 
 func (repo *ClubRepository) UpdateCompany(id uint, company domain.Company) (*domain.Company, error) {
-	companyResult, result := repo.getByID(id)
+	companyResult, result := repo.getCompanyBy(id, "id")
 	if result.Error != nil {
 		return nil, result.Error
 	}
-
-	// companyResult.ID = company.ID
-	// companyResult.Owner = company.Owner
-	// companyResult.Information = company.Information
-	// companyResult.Franchises = company.Franchises
 
 	result = repo.db.Model(&companyResult).Updates(&company)
 	if result.Error != nil {
@@ -61,14 +65,67 @@ func (repo *ClubRepository) UpdateCompany(id uint, company domain.Company) (*dom
 	return &company, nil
 }
 
-func (repo *ClubRepository) getByID(id uint) (*domain.Company, *gorm.DB) {
+func (repo *ClubRepository) GetCompanyByFranchise(filterFields map[string]string) (*domain.Company, error) {
+	franchises := []domain.Franchise{}
+
+	result := repo.db.Where(filterFields).Find(&franchises)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if len(franchises) == 0 {
+		return nil, apperrors.FranchiseNotFound
+	}
+
+	companyID := franchises[0].CompanyID
+
+	company, err := repo.getCompanyBy(*companyID, "id")
+	if err.Error != nil {
+		return nil, err.Error
+	}
+
+	return company, nil
+}
+
+func (repo *ClubRepository) GetCompanyByInformation(filterFields map[string]string) (*domain.Company, error) {
+	information := &domain.Information{}
+	return repo.getCompanyByModel(filterFields, information, id, informationID)
+}
+
+func (repo *ClubRepository) GetCompanyByOwner(filterFields map[string]string) (*domain.Company, error) {
+	owner := &domain.Owner{}
+	return repo.getCompanyByModel(filterFields, owner, id, ownerID)
+}
+
+func (repo *ClubRepository) getCompanyBy(value uint, field string) (*domain.Company, *gorm.DB) {
 	company := &domain.Company{}
 
 	result := repo.db.
 		Preload("Owner.Contact.Location").
 		Preload("Information.Location").
 		Preload("Franchises.Location").
-		Take(&company, id)
+		First(&company, field+" = ?", value)
 
 	return company, result
+}
+
+func (repo *ClubRepository) getCompanyByModel(filterFields map[string]string, model interface{}, field, fieldToFind string) (*domain.Company, error) {
+	result := repo.db.Where(filterFields).Find(model)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, apperrors.RecordNotFound
+	}
+
+	modelValue := reflect.ValueOf(model).Elem()
+	modelID := modelValue.FieldByName(field).Elem().Uint()
+
+	company, err := repo.getCompanyBy(uint(modelID), fieldToFind)
+	if err.Error != nil {
+		return nil, err.Error
+	}
+
+	return company, nil
 }

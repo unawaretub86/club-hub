@@ -28,6 +28,42 @@ func (r *ClubHubRouter) GetCompany(c *gin.Context) {
 	utils.EndWithStatus(c, http.StatusOK, suffixCompany, company)
 }
 
+func (r *ClubHubRouter) GetCompanyByFranchise(c *gin.Context) {
+	filterFields := utils.ExtractAllParams(c)
+
+	company, err := r.clubHubService.GetCompanyByFranchise(filterFields)
+	if err != nil {
+		utils.EndWithStatusError(c, http.StatusBadRequest, suffixCompany, err)
+		return
+	}
+
+	utils.EndWithStatus(c, http.StatusOK, suffixCompany, company)
+}
+
+func (r *ClubHubRouter) GetCompanyByInformation(c *gin.Context) {
+	filterFields := utils.ExtractAllParams(c)
+
+	company, err := r.clubHubService.GetCompanyByInformation(filterFields)
+	if err != nil {
+		utils.EndWithStatusError(c, http.StatusBadRequest, suffixCompany, err)
+		return
+	}
+
+	utils.EndWithStatus(c, http.StatusOK, suffixCompany, company)
+}
+
+func (r *ClubHubRouter) GetCompanyByOwner(c *gin.Context) {
+	filterFields := utils.ExtractAllParams(c)
+
+	company, err := r.clubHubService.GetCompanyByOwner(filterFields)
+	if err != nil {
+		utils.EndWithStatusError(c, http.StatusBadRequest, suffixCompany, err)
+		return
+	}
+
+	utils.EndWithStatus(c, http.StatusOK, suffixCompany, company)
+}
+
 func (r *ClubHubRouter) SaveCompany(c *gin.Context) {
 	companyData := &domain.ReqData{}
 
