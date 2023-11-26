@@ -19,7 +19,7 @@ func (s *clubHubService) SaveCompany(company domain.Company) (*domain.Company, e
 	return s.repository.SaveCompany(company)
 }
 
-func (s *clubHubService) GetCompany(filterFields map[string]string) (*domain.Company, error) {
+func (s *clubHubService) GetCompany(filterFields map[string]string) ([]domain.Company, error) {
 	return s.repository.GetCompany(filterFields)
 }
 

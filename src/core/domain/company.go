@@ -1,8 +1,16 @@
 package domain
 
-type Company struct {
-	ID          uint        `json:"id"`
-	Owner       Owner       `json:"owner,omitempty"`
-	Information Information `json:"information,omitempty"`
-	Franchises  Franchises  `json:"franchises,omitempty"`
-}
+type (
+	Company struct {
+		ID            *uint        `gorm:"primaryKey" json:"id,omitempty"`
+		OwnerID       *uint        `gorm:"references:owners" json:"ownerId,omitempty"`
+		Owner         *Owner       `json:"owner,omitempty"`
+		InformationID *uint        `gorm:"references:information" json:"informacionId,omitempty"`
+		Information   *Information `json:"informacion,omitempty"`
+		Franchises    *Franchises  `gorm:"foreignKey:CompanyID" json:"franchises,omitempty"`
+	}
+
+	ReqData struct {
+		Company Company `json:"company"`
+	}
+)

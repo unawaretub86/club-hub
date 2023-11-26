@@ -22,6 +22,6 @@ func (r *ClubHubRouter) SetRoutes(g *gin.Engine) {
 	group.GET("/company", r.GetCompany)
 
 	// write
-	group.PATCH("/company/:id", r.UpdateCompany)
-	group.POST("/company", r.SaveCompany)
+	group.PATCH("/:id", r.UpdateCompany)
+	group.POST("/", r.SaveCompany)
 }

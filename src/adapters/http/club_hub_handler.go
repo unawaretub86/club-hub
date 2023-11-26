@@ -29,16 +29,16 @@ func (r *ClubHubRouter) GetCompany(c *gin.Context) {
 }
 
 func (r *ClubHubRouter) SaveCompany(c *gin.Context) {
-	var companyData domain.Company
+	companyData := &domain.ReqData{}
 
 	if err := c.ShouldBindJSON(&companyData); err != nil {
 		utils.EndWithStatusError(c, http.StatusBadRequest, suffixCompany, err)
 		return
 	}
 
-	fmt.Println(companyData.Owner)
+	fmt.Println(companyData)
 
-	company, err := r.clubHubService.SaveCompany(companyData)
+	company, err := r.clubHubService.SaveCompany(companyData.Company)
 	if err != nil {
 		utils.EndWithStatusError(c, http.StatusBadRequest, suffixCompany, err)
 		return
@@ -48,7 +48,7 @@ func (r *ClubHubRouter) SaveCompany(c *gin.Context) {
 }
 
 func (r *ClubHubRouter) UpdateCompany(c *gin.Context) {
-	companyData := &domain.Company{}
+	companyData := &domain.ReqData{}
 
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 64)
@@ -63,7 +63,7 @@ func (r *ClubHubRouter) UpdateCompany(c *gin.Context) {
 		return
 	}
 
-	company, err := r.clubHubService.UpdateCompany(uint(id), *companyData)
+	company, err := r.clubHubService.UpdateCompany(uint(id), companyData.Company)
 	if err != nil {
 		utils.EndWithStatusError(c, http.StatusBadRequest, suffixErr, err)
 		return

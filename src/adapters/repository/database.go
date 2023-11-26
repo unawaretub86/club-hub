@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"gorm.io/gorm"
 
 	"github.com/unawaretub86/club-hub/src/core/domain"
@@ -20,18 +18,23 @@ func NewClubRepository(db *gorm.DB) *ClubRepository {
 
 func (repo *ClubRepository) SaveCompany(company domain.Company) (*domain.Company, error) {
 
-	fmt.Println(company)
-
 	if err := repo.db.Create(&company).Error; err != nil {
 		return nil, err
 	}
+
 	return &company, nil
 }
 
-func (repo *ClubRepository) GetCompany(filterFields map[string]string) (*domain.Company, error) {
-	company := &domain.Company{}
+func (repo *ClubRepository) GetCompany(filterFields map[string]string) ([]domain.Company, error) {
+	company := []domain.Company{}
 
-	result := repo.db.Where(filterFields).Find(company)
+	result := repo.db.
+		Preload("Owner.Contact.Location").
+		Preload("Information.Location").
+		Preload("Franchises.Location").
+		Where(filterFields).
+		Find(&company)
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -45,9 +48,12 @@ func (repo *ClubRepository) UpdateCompany(id uint, company domain.Company) (*dom
 		return nil, result.Error
 	}
 
-	company.ID = companyResult.ID
+	// companyResult.ID = company.ID
+	// companyResult.Owner = company.Owner
+	// companyResult.Information = company.Information
+	// companyResult.Franchises = company.Franchises
 
-	result = repo.db.Updates(company)
+	result = repo.db.Model(&companyResult).Updates(&company)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -58,7 +64,11 @@ func (repo *ClubRepository) UpdateCompany(id uint, company domain.Company) (*dom
 func (repo *ClubRepository) getByID(id uint) (*domain.Company, *gorm.DB) {
 	company := &domain.Company{}
 
-	result := repo.db.Take(&company, id)
+	result := repo.db.
+		Preload("Owner.Contact.Location").
+		Preload("Information.Location").
+		Preload("Franchises.Location").
+		Take(&company, id)
 
 	return company, result
 }
