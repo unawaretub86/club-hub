@@ -16,13 +16,13 @@ func NewClubHubService(repository ports.RepositoryPort) *clubHubService {
 }
 
 func (s *clubHubService) SaveCompany(company domain.Company) (*domain.Company, error) {
-	return s.repository.Save(company)
+	return s.repository.SaveCompany(company)
 }
 
 func (s *clubHubService) GetCompany(filterFields map[string]string) (*domain.Company, error) {
-	return s.repository.Get(filterFields)
+	return s.repository.GetCompany(filterFields)
 }
 
 func (s *clubHubService) UpdateCompany(id uint, company domain.Company) (*domain.Company, error) {
-	return s.repository.Update(id, company)
+	return s.repository.UpdateCompany(id, company)
 }

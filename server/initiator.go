@@ -2,18 +2,73 @@ package server
 
 import (
 	"fmt"
+	"log"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
+	"github.com/gin-gonic/gin"
+
 	"github.com/unawaretub86/club-hub/config"
+	web "github.com/unawaretub86/club-hub/src/adapters/http"
+	"github.com/unawaretub86/club-hub/src/adapters/repository"
+	"github.com/unawaretub86/club-hub/src/core/ports"
+	"github.com/unawaretub86/club-hub/src/core/services"
 )
 
-func InitDB() (*gorm.DB, error) {
+type Service struct {
+	clubHub ports.WebPort
+}
+
+type Initiator struct {
+	db      *gorm.DB
+	service Service
+	router  *gin.Engine
+}
+
+func NewInitiator() *Initiator {
+	return &Initiator{}
+}
+
+func (initiator *Initiator) InitDB() {
 	dbConfig := config.GetDatabaseConfig()
 
-	db, err := gorm.Open("postgres", fmt.Sprintf("user=%s dbname=%s sslmode=%s", dbConfig.Username, dbConfig.DBName, dbConfig.SSLMode))
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5432",
+		dbConfig.Host,
+		dbConfig.Username,
+		dbConfig.Password,
+		dbConfig.DBName,
+		// dbConfig.DatabasePort,
+	)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		log.Fatal("DB connect error:" + err.Error())
 	}
 
-	return db, nil
+	initiator.db = db
+}
+
+func (initiator *Initiator) InitService() {
+	clubHubRepo := repository.NewClubRepository(initiator.db)
+	clubHubService := services.NewClubHubService(clubHubRepo)
+
+	initiator.service = Service{
+		clubHubService,
+	}
+}
+
+func (initiator *Initiator) InitRouter() {
+	initiator.router = gin.Default()
+
+	clubRouter := web.NewRouter(initiator.service.clubHub)
+	clubRouter.SetRoutes(initiator.router)
+}
+
+func (initiator *Initiator) GetRouter() *gin.Engine {
+	return initiator.router
+}
+
+func (initiator *Initiator) GetDB() *gorm.DB {
+	return initiator.db
 }

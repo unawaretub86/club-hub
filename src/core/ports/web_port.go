@@ -3,7 +3,7 @@ package ports
 import "github.com/unawaretub86/club-hub/src/core/domain"
 
 type WebPort interface {
-	Save(domain.Company) (*domain.Company, error)
-	Get(map[string]string) (*domain.Company, error)
-	Update(uint, domain.Company) (*domain.Company, error)
+	SaveCompany(domain.Company) (*domain.Company, error)
+	GetCompany(map[string]string) (*domain.Company, error)
+	UpdateCompany(uint, domain.Company) (*domain.Company, error)
 }

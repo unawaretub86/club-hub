@@ -9,9 +9,9 @@ type ClubHubRouter struct {
 	clubHubService ports.WebPort
 }
 
-func NewRouter(clubHubServiceports ports.WebPort) *ClubHubRouter {
+func NewRouter(clubHubServicePorts ports.WebPort) *ClubHubRouter {
 	return &ClubHubRouter{
-		clubHubService: clubHubServiceports,
+		clubHubService: clubHubServicePorts,
 	}
 }
 
@@ -22,6 +22,6 @@ func (r *ClubHubRouter) SetRoutes(g *gin.Engine) {
 	group.GET("/company", r.GetCompany)
 
 	// write
-	group.PATCH("/company", r.UpdateCompany)
-	group.POST("/company", r.CreateCompany)
+	group.PATCH("/company/:id", r.UpdateCompany)
+	group.POST("/company", r.SaveCompany)
 }

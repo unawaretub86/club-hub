@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -18,7 +19,7 @@ const (
 func (r *ClubHubRouter) GetCompany(c *gin.Context) {
 	filterFields := utils.ExtractAllParams(c)
 
-	company, err := r.clubHubService.Get(filterFields)
+	company, err := r.clubHubService.GetCompany(filterFields)
 	if err != nil {
 		utils.EndWithStatusError(c, http.StatusBadRequest, suffixCompany, err)
 		return
@@ -27,16 +28,17 @@ func (r *ClubHubRouter) GetCompany(c *gin.Context) {
 	utils.EndWithStatus(c, http.StatusOK, suffixCompany, company)
 }
 
-func (r *ClubHubRouter) CreateCompany(c *gin.Context) {
-	companyData := &domain.Company{}
+func (r *ClubHubRouter) SaveCompany(c *gin.Context) {
+	var companyData domain.Company
 
-	err := c.ShouldBindJSON(&companyData)
-	if err != nil {
+	if err := c.ShouldBindJSON(&companyData); err != nil {
 		utils.EndWithStatusError(c, http.StatusBadRequest, suffixCompany, err)
 		return
 	}
 
-	company, err := r.clubHubService.Save(*companyData)
+	fmt.Println(companyData.Owner)
+
+	company, err := r.clubHubService.SaveCompany(companyData)
 	if err != nil {
 		utils.EndWithStatusError(c, http.StatusBadRequest, suffixCompany, err)
 		return
@@ -61,7 +63,7 @@ func (r *ClubHubRouter) UpdateCompany(c *gin.Context) {
 		return
 	}
 
-	company, err := r.clubHubService.Update(uint(id), *companyData)
+	company, err := r.clubHubService.UpdateCompany(uint(id), *companyData)
 	if err != nil {
 		utils.EndWithStatusError(c, http.StatusBadRequest, suffixErr, err)
 		return

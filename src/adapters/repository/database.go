@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"github.com/unawaretub86/club-hub/src/core/domain"
@@ -16,16 +18,17 @@ func NewClubRepository(db *gorm.DB) *ClubRepository {
 	}
 }
 
-func (repo *ClubRepository) Save(company domain.Company) (*domain.Company, error) {
-	result := repo.db.Create(&company)
-	if result.Error != nil {
-		return nil, result.Error
-	}
+func (repo *ClubRepository) SaveCompany(company domain.Company) (*domain.Company, error) {
 
+	fmt.Println(company)
+
+	if err := repo.db.Create(&company).Error; err != nil {
+		return nil, err
+	}
 	return &company, nil
 }
 
-func (repo *ClubRepository) Get(filterFields map[string]string) (*domain.Company, error) {
+func (repo *ClubRepository) GetCompany(filterFields map[string]string) (*domain.Company, error) {
 	company := &domain.Company{}
 
 	result := repo.db.Where(filterFields).Find(company)
@@ -36,7 +39,7 @@ func (repo *ClubRepository) Get(filterFields map[string]string) (*domain.Company
 	return company, nil
 }
 
-func (repo *ClubRepository) Update(id uint, company domain.Company) (*domain.Company, error) {
+func (repo *ClubRepository) UpdateCompany(id uint, company domain.Company) (*domain.Company, error) {
 	companyResult, result := repo.getByID(id)
 	if result.Error != nil {
 		return nil, result.Error
