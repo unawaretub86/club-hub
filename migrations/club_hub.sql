@@ -65,3 +65,23 @@ CREATE TABLE franchises (
     url VARCHAR (255) UNIQUE,
     location_id INT REFERENCES locations(id)
 );
+
+CREATE TABLE domain_scrap_data (
+    ID SERIAL PRIMARY KEY,
+    created_at VARCHAR(50),
+    expires_at VARCHAR(50),
+    registrant VARCHAR(50),
+    contact_email VARCHAR(100),
+    company_id INTEGER
+);
+
+CREATE TABLE franchise_scrap_data (
+    ID SERIAL PRIMARY KEY,
+    image_url VARCHAR(255),
+    Status varchar(50),
+    communication_type VARCHAR(10),
+    hop_count INTEGER,
+    servers text[],
+    domain_scrap_data_id INTEGER REFERENCES domain_scrap_data(ID),
+    company_id INTEGER
+);
