@@ -42,6 +42,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/lib/pq v1.10.9
 	github.com/likexian/whois v1.15.1
 	gorm.io/driver/postgres v1.5.4
 )

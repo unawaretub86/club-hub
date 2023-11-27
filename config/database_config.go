@@ -1,8 +1,7 @@
 package config
 
-import (
-	"os"
-)
+import "os"
+
 
 type DatabaseConfig struct {
 	Username     string

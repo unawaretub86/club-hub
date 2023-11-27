@@ -1,7 +1,9 @@
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"regexp"
@@ -39,7 +41,7 @@ func (scrapper *Scrapper) ScrapCompanyData(franchises []domain.Franchise) ([]dom
 
 			franchiseInfo, err := getFranchiseInfo(url)
 			if err != nil {
-				log.Println("Error obteniendo información de la franquicia:", err)
+				log.Println("Error getting data from Franchise:", err)
 				return
 			}
 
@@ -54,7 +56,7 @@ func (scrapper *Scrapper) ScrapCompanyData(franchises []domain.Franchise) ([]dom
 
 			domainInfo, err := getDomainInfo(url)
 			if err != nil {
-				log.Println("Error obteniendo información para la franquicia:", err)
+				log.Println("Error getting data from Domain:", err)
 				return
 			}
 
@@ -77,33 +79,20 @@ func (scrapper *Scrapper) ScrapCompanyData(franchises []domain.Franchise) ([]dom
 	return franchiseInfoList, nil
 }
 
-func addHTTPScheme(url string) string {
-	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
-		url = "https://" + url
-	}
-	return url
-}
-
-func removeHTTPWWW(url string) string {
-	re := regexp.MustCompile(`^https://www\.`)
-	return re.ReplaceAllString(url, "")
-}
-
 func getFranchiseInfo(franchiseURL string) (domain.FranchiseScrapData, error) {
 	info := &domain.FranchiseScrapData{}
 
 	info.ImageURL = getImageURL(franchiseURL)
 
-	info.IsWebsiteUp = isWebsiteUp(franchiseURL)
-
-	info.CommunicationType = getCommunicationType(franchiseURL)
-
-	hopCount, _, err := getHopCountAndServers(franchiseURL)
+	hopCount, servers, status, protocol, err := getDataFromSSL(franchiseURL)
 	if err != nil {
 		return domain.FranchiseScrapData{}, err
 	}
 
 	info.HopCount = hopCount
+	info.Servers = servers
+	info.Status = *status
+	info.CommunicationType = *protocol
 
 	return *info, nil
 }
@@ -135,41 +124,41 @@ func getImageURL(url string) string {
 	return imageURL
 }
 
-func isWebsiteUp(url string) bool {
-	// Implementa la verificación del estado del sitio web aquí.
-	// Puedes usar la librería net/http para enviar una solicitud HTTP y verificar el código de respuesta.
-	resp, err := http.Head(url)
-	if err != nil {
-		log.Println("Error al enviar la solicitud HEAD:", err)
-		return false
-	}
-
-	return resp.StatusCode == http.StatusOK
-}
-
-func getCommunicationType(url string) string {
-	if strings.HasPrefix(url, "https://") {
-		return "HTTPS"
-	}
-
-	return "HTTP"
-}
-
-func getHopCountAndServers(url string) (int, []string, error) {
+func getDataFromSSL(url string) (int, []string, *string, *string, error) {
 	resp, err := http.Get("https://api.ssllabs.com/api/v3/analyze?host=" + url)
 	if err != nil {
-		return 0, nil, err
+		return 0, nil, nil, nil, err
 	}
 	defer resp.Body.Close()
 
-	// ... procesar la respuesta de la API de SSL Labs y extraer la información necesaria.
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, nil, nil, err
+	}
 
-	return 3, []string{"Server1", "Server2", "Server3"}, nil
+	var sslLabsResponse domain.SSLDomainScrapData
+	err = json.Unmarshal(body, &sslLabsResponse)
+	if err != nil {
+		return 0, nil, nil, nil, err
+	}
+
+	var hopCount int
+
+	var servers []string
+	for _, endpoint := range sslLabsResponse.Servers {
+		servers = append(servers, endpoint.ServerName)
+		hopCount = len(servers)
+	}
+
+	status := sslLabsResponse.Status
+	protocol := sslLabsResponse.Protocol
+
+	return hopCount, servers, &status, &protocol, nil
 }
 
 func getDomainInfo(url string) (domain.DomainScrapData, error) {
 
-	franchiseURLNoProtocol := removeHTTPWWW(url)
+	franchiseURLNoProtocol := removeHTTP(url)
 
 	whoisResult, err := whois.Whois(franchiseURLNoProtocol)
 	if err != nil {
@@ -202,6 +191,18 @@ func getDomainInfo(url string) (domain.DomainScrapData, error) {
 		Registrant:   registrant,
 		ContactEmail: contactEmail,
 	}, nil
+}
+
+func addHTTPScheme(url string) string {
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+		url = "https://" + url
+	}
+	return url
+}
+
+func removeHTTP(url string) string {
+	re := regexp.MustCompile(`^https://www\.`)
+	return re.ReplaceAllString(url, "")
 }
 
 func parseValue(whoisResult, key string) (string, error) {
