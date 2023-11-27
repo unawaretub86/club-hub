@@ -98,26 +98,22 @@ func getFranchiseInfo(franchiseURL string) (domain.FranchiseScrapData, error) {
 }
 
 func getImageURL(url string) string {
-	// Implementa el web scraping aquí para obtener la URL de la imagen.
-	// Puedes usar goquery u otra biblioteca de scraping de tu elección.
-
-	// Ejemplo de implementación con goquery:
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Println("Error al obtener la página web:", err)
+		log.Println("Error getting web:", err)
 		return ""
 	}
 	defer resp.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		log.Println("Error al analizar la página web:", err)
+		log.Println("Error analyzing web:", err)
 		return ""
 	}
 
 	imageURL, exists := doc.Find("meta[property='og:image']").Attr("content")
 	if !exists {
-		log.Println("No se encontró la etiqueta meta con propiedad 'og:image'")
+		log.Println("property 'og:image' not found")
 		return ""
 	}
 
