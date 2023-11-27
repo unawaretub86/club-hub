@@ -1,0 +1,362 @@
+openapi: 3.0.0
+info:
+  title: Club-hub api
+  description: API for manage club-hub data.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/company
+paths:
+  /:
+    post:
+      summary: saves company, verify data from domain and servers
+      description: returns the company saved
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/create-company"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/company'
+        '404':
+          description: not found
+          content: {}
+  /{id}:
+    patch:
+      summary: updates company, can be updated by owner, information, or franchises
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: int
+      description: returns the updated company fields
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/company'
+        '404':
+          description: not found
+          content: {}
+  /franchise:
+    get:
+      summary: Get company by franchise fields
+      parameters:
+        - in: query
+          name: Park royal
+          schema:
+            type: string
+          description: Get franchises by name
+        - in: query
+          name: url
+          schema:
+            type: string
+          description: Get franchises by url
+      description: Returns the company filtered by franchises fields
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/company'
+        '404':
+          description: Not found
+          content: {}
+  /information:
+    get:
+      summary: Get company by information fields
+      parameters:
+        - in: query
+          name: My entreprise holding
+          schema:
+            type: string
+          description: Get information by name
+        - in: query
+          name: tax_number
+          schema:
+            type: int
+          description: Get information by tax number
+      description: Returns the company filtered by information fields
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/company'
+        '404':
+          description: Not found
+          content: {}
+  /owner:
+    get:
+      summary: Get company by owner fields
+      parameters:
+        - in: query
+          first_name: josh
+          schema:
+            type: string
+          description: Get owner by first name
+        - in: query
+          last_name: porch
+          schema:
+            type: int
+          description: Get owner by last name
+      description: Returns the company filtered by owner fields
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/company'
+        '404':
+          description: Not found
+          content: {}
+
+components:
+  schemas:
+    create-company:
+      type: object
+      properties:
+        owner:
+          type: object
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+            contact:
+              type: object
+              properties:
+                email:
+                  type: string
+                phone:
+                  type: string
+                location:
+                  type: object
+                  properties:
+                    city:
+                      type: string
+                    country_id:
+                      type: integer
+                    address:
+                      type: string
+                    zip_code:
+                      type: string
+        informacion:
+          type: object
+          properties:
+            name:
+              type: string
+            tax_number:
+              type: string
+            location:
+              type: object
+              properties:
+                city:
+                  type: string
+                country_id:
+                  type: integer
+                address:
+                  type: string
+                zip_code:
+                  type: string
+        franchises:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              url:
+                type: string
+              location:
+                type: object
+                properties:
+                  city:
+                    type: string
+                  country_id:
+                    type: integer
+                  Address:
+                    type: string
+                  zip_code:
+                    type: string
+    company:
+      type: object
+      properties:
+        Company:
+          type: object
+          properties:
+            id:
+              type: integer
+            ownerId:
+              type: integer
+            owner:
+              type: object
+              properties:
+                id:
+                  type: integer
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                contactId:
+                  type: integer
+                contact:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    email:
+                      type: string
+                    phone:
+                      type: string
+                    locationId:
+                      type: integer
+                    location:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        city:
+                          type: string
+                        country_id:
+                          type: integer
+                        Country:
+                          type: object
+                          properties:
+                            name:
+                              type: null
+                        address:
+                          type: string
+                        zip_code:
+                          type: string
+            informacionId:
+              type: integer
+            informacion:
+              type: object
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+                tax_number:
+                  type: string
+                locationId:
+                  type: integer
+                location:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    city:
+                      type: string
+                    country_id:
+                      type: integer
+                    Country:
+                      type: object
+                      properties:
+                        name:
+                          type: null
+                    address:
+                      type: string
+                    zip_code:
+                      type: string
+            franchises:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  companyId:
+                    type: integer
+                  name:
+                    type: string
+                  url:
+                    type: string
+                  locationId:
+                    type: integer
+                  location:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      city:
+                        type: string
+                      country_id:
+                        type: integer
+                      Country:
+                        type: object
+                        properties:
+                          name:
+                            type: null
+                      address:
+                        type: string
+                      zip_code:
+                        type: string
+            scrapedData:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  image_url:
+                    type: string
+                  status:
+                    type: string
+                  communication_type:
+                    type: string
+                  hop_count:
+                    type: integer
+                  servers:
+                    type: array
+                    items:
+                      type: string
+                  domainScrapDataId:
+                    type: integer
+                  DomainScrapData:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      created_at:
+                        type: string
+                        format: date-time
+                      expires_at:
+                        type: string
+                        format: date-time
+                      registrant:
+                        type: string
+                      contact_email:
+                        type: string
