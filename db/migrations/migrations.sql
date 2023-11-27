@@ -3,7 +3,6 @@ CREATE TABLE countries (
     name VARCHAR(50) UNIQUE
 );
 
-
 INSERT INTO countries (name) VALUES
     ('Argentina'),
     ('Australia'),
