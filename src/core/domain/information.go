@@ -1,7 +1,9 @@
 package domain
 
 type Information struct {
-	Name *string `json:"name,omitempty"`
-	TaxNumber *string `json:"tax_number,omitempty"`
-	Location Location `json:"location,omitempty"`
+	ID         *uint     `gorm:"primaryKey" json:"id,omitempty"`
+	Name       *string   `gorm:"not null" json:"name,omitempty"`
+	TaxNumber  *string   `gorm:"not null,unique" json:"tax_number,omitempty"`
+	LocationID *uint     `gorm:"references:locations" json:"locationId,omitempty"`
+	Location   *Location `json:"location,omitempty"`
 }
