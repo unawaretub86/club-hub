@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -72,8 +71,6 @@ func (r *ClubHubRouter) SaveCompany(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(companyData)
-
 	company, err := r.clubHubService.SaveCompany(companyData.Company)
 	if err != nil {
 		utils.EndWithStatusError(c, http.StatusBadRequest, suffixCompany, err)
@@ -93,9 +90,8 @@ func (r *ClubHubRouter) UpdateCompany(c *gin.Context) {
 		return
 	}
 
-	err = c.ShouldBindJSON(&companyData)
-	if err != nil {
-		utils.EndWithStatusError(c, http.StatusBadRequest, suffixErr, err)
+	if err := c.ShouldBindJSON(&companyData); err != nil {
+		utils.EndWithStatusError(c, http.StatusBadRequest, suffixCompany, err)
 		return
 	}
 

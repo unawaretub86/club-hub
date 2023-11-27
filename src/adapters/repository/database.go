@@ -26,7 +26,6 @@ func NewClubRepository(db *gorm.DB) *ClubRepository {
 }
 
 func (repo *ClubRepository) SaveCompany(company domain.Company) (*domain.Company, error) {
-
 	if err := repo.db.Create(&company).Error; err != nil {
 		return nil, err
 	}
@@ -52,15 +51,50 @@ func (repo *ClubRepository) GetCompany(filterFields map[string]string) (domain.C
 }
 
 func (repo *ClubRepository) UpdateCompany(id uint, company domain.Company) (*domain.Company, error) {
-	companyResult, result := repo.getCompanyBy(id, "id")
-	if result.Error != nil {
-		return nil, result.Error
+	// Start a transaction
+	tx := repo.db.Begin()
+
+	// Update the main table (Company) using Updates
+	if err := tx.Model(&company).Updates(&company).Error; err != nil {
+		tx.Rollback()
+		return nil, err
 	}
 
-	result = repo.db.Model(&companyResult).Updates(&company)
-	if result.Error != nil {
-		return nil, result.Error
+	// Update the associated tables (Owner, Information) using subqueries
+	if company.Owner != nil {
+		if err := tx.
+			Model(&domain.Owner{}).
+			Where("id = ?", &company.Owner.ID).
+			Updates(&company.Owner).Error; err != nil {
+			tx.Rollback()
+			return nil, err
+		}
 	}
+
+	if company.Information != nil {
+		if err := tx.
+			Model(&domain.Information{}).
+			Where("id = ?", &company.Information.ID).
+			Updates(&company.Information).Error; err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+	}
+
+	if company.Franchises != nil {
+		for _, franchise := range company.Franchises {
+			if err := tx.
+				Model(&domain.Franchise{}).
+				Where("id = ?", franchise.ID).
+				Updates(&franchise).Error; err != nil {
+				tx.Rollback()
+				return nil, err
+			}
+		}
+	}
+
+	// Commit the transaction
+	tx.Commit()
 
 	return &company, nil
 }

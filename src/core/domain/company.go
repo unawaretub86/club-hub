@@ -7,7 +7,7 @@ type (
 		Owner         *Owner       `json:"owner,omitempty"`
 		InformationID *uint        `gorm:"references:informacion" json:"informacionId,omitempty"`
 		Information   *Information `json:"informacion,omitempty"`
-		Franchises    *Franchises  `gorm:"foreignKey:CompanyID" json:"franchises,omitempty"`
+		Franchises    []Franchise  `gorm:"foreignKey:CompanyID" json:"franchises,omitempty"`
 	}
 	ReqData struct {
 		Company Company `json:"company"`

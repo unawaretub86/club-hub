@@ -1,46 +1,67 @@
--- database script
-
-CREATE TABLE IF NOT EXISTS countries (
-    ID SERIAL PRIMARY KEY,
-    name VARCHAR(60) NOT NULL
+CREATE TABLE countries (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS locations (
-    ID SERIAL  PRIMARY KEY,
-    city VARCHAR(60) NOT NULL,
+
+INSERT INTO countries (name) VALUES
+    ('Argentina'),
+    ('Australia'),
+    ('Brasil'),
+    ('Canadá'),
+    ('China'),
+    ('España'),
+    ('Estados Unidos'),
+    ('Francia'),
+    ('India'),
+    ('Italia'),
+    ('Japón'),
+    ('México'),
+    ('Reino Unido'),
+    ('Rusia'),
+    ('Sudáfrica'),
+   	('Colombia');
+
+
+CREATE TABLE locations (
+    id SERIAL PRIMARY KEY,
+    city VARCHAR(100),
+    country_id INT REFERENCES countries(id),
     address VARCHAR(100),
-    zip_code VARCHAR(10),
-    country_ID INT NOT NULL,
-    FOREIGN KEY (country_ID) REFERENCES country(ID)
+    zip_code VARCHAR(20)
 );
 
-CREATE TABLE IF NOT EXISTS companies (
-    ID SERIAL PRIMARY KEY,
-    name VARCHAR(60) NOT NULL,
-    tax_number VARCHAR(20) NOT NULL,
-    location_ID INT NOT NULL,
-    FOREIGN KEY (location_ID) REFERENCES location(ID)
+CREATE TABLE contacts (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(20) UNIQUE NOT NULL,
+    location_id INTEGER REFERENCES locations(id)
 );
 
-CREATE TABLE IF NOT EXISTS owners (
-    ID SERIAL  PRIMARY KEY,
-    first_name VARCHAR(30) NOT NULL,
-    last_name VARCHAR(30) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    phone VARCHAR(20),
-    location_ID INT NOT NULL,
-    company_ID INT NOT NULL,
-    FOREIGN KEY (location_ID) REFERENCES location(ID),
-    FOREIGN KEY (company_ID) REFERENCES company(ID)
+CREATE TABLE owners (
+    id SERIAL PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    contact_id INTEGER REFERENCES contacts(id)
 );
 
-CREATE TABLE IF NOT EXISTS franchises (
-    ID SERIAL PRIMARY KEY,
-    name VARCHAR(60) NOT NULL,
-    url VARCHAR(150),
-    location_ID INT NOT NULL,
-    company_ID INT NOT NULL,
-    FOREIGN KEY (location_ID) REFERENCES location(ID),
-    FOREIGN KEY (company_ID) REFERENCES company(ID)
+CREATE TABLE information (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    tax_number VARCHAR(20) UNIQUE NOT NULL,
+    location_id INTEGER REFERENCES locations(id)
 );
 
+CREATE TABLE companies (
+    id  SERIAL PRIMARY KEY,
+    owner_id INTEGER REFERENCES owners(id),
+    information_id INTEGER REFERENCES information(id)
+);
+
+CREATE TABLE franchises (
+    id SERIAL PRIMARY KEY,
+    company_id INT REFERENCES companies(id),
+    name VARCHAR (100) UNIQUE,
+    url VARCHAR (255) UNIQUE,
+    location_id INT REFERENCES locations(id)
+);
