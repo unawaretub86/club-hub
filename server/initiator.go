@@ -19,7 +19,7 @@ import (
 
 type Service struct {
 	clubHub ports.ClubHubPort
-	rest ports.ScrapperPort
+	rest    ports.ScrapperPort
 }
 
 type Initiator struct {
@@ -40,7 +40,6 @@ func (initiator *Initiator) InitDB() {
 		dbConfig.Username,
 		dbConfig.Password,
 		dbConfig.DBName,
-		// dbConfig.DatabasePort,
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
