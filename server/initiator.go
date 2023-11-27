@@ -12,12 +12,14 @@ import (
 	"github.com/unawaretub86/club-hub/config"
 	web "github.com/unawaretub86/club-hub/src/adapters/http"
 	"github.com/unawaretub86/club-hub/src/adapters/repository"
+	"github.com/unawaretub86/club-hub/src/adapters/rest"
 	"github.com/unawaretub86/club-hub/src/core/ports"
 	"github.com/unawaretub86/club-hub/src/core/services"
 )
 
 type Service struct {
-	clubHub ports.WebPort
+	clubHub ports.ClubHubPort
+	rest ports.ScrapperPort
 }
 
 type Initiator struct {
@@ -51,10 +53,12 @@ func (initiator *Initiator) InitDB() {
 
 func (initiator *Initiator) InitService() {
 	clubHubRepo := repository.NewClubRepository(initiator.db)
-	clubHubService := services.NewClubHubService(clubHubRepo)
+	clubHubRest := rest.NewScrapper(initiator.service.rest)
+	clubHubService := services.NewClubHubService(clubHubRepo, clubHubRest)
 
 	initiator.service = Service{
 		clubHubService,
+		clubHubRest,
 	}
 }
 

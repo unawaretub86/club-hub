@@ -6,17 +6,17 @@ import (
 )
 
 type ClubHubRouter struct {
-	clubHubService ports.WebPort
+	clubHubService ports.ClubHubPort
 }
 
-func NewRouter(clubHubServicePorts ports.WebPort) *ClubHubRouter {
+func NewRouter(clubHubServicePorts ports.ClubHubPort) *ClubHubRouter {
 	return &ClubHubRouter{
 		clubHubService: clubHubServicePorts,
 	}
 }
 
 func (r *ClubHubRouter) SetRoutes(g *gin.Engine) {
-	group := g.Group("/company" )
+	group := g.Group("/company")
 
 	// read
 	group.GET("/", r.GetCompany)

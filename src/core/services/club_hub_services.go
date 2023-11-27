@@ -7,15 +7,25 @@ import (
 
 type clubHubService struct {
 	repository ports.RepositoryPort
+	scraper    ports.ScrapperPort
 }
 
-func NewClubHubService(repository ports.RepositoryPort) *clubHubService {
+func NewClubHubService(repository ports.RepositoryPort, scraper ports.ScrapperPort) *clubHubService {
 	return &clubHubService{
 		repository,
+		scraper,
 	}
 }
 
 func (s *clubHubService) SaveCompany(company domain.Company) (*domain.Company, error) {
+
+	information, err := s.scraper.ScrapCompanyData(company.Franchises)
+	if err != nil {
+		return nil, err
+	}
+
+	company.FranchiseScrapData = information
+
 	return s.repository.SaveCompany(company)
 }
 
